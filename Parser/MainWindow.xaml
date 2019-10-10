@@ -3,9 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         xmlns:local="clr-namespace:Parser"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="700">
+        Title="MainWindow" Height="600" Width="720">
     <Window.Background>
         <LinearGradientBrush EndPoint="0.7,1" StartPoint="0.3,0">
             <GradientStop Color="#FFFDC1CF" Offset="0.996"/>
@@ -13,6 +14,7 @@
             <GradientStop Color="#FF6BE3E6" Offset="0.308"/>
         </LinearGradientBrush>
     </Window.Background>
+    
     <Window.Resources>
         <Style x:Key="HeaderStyle" >
             <Setter Property="Control.HorizontalAlignment" Value="Center" />
@@ -37,6 +39,37 @@
             <Setter Property="Control.FontSize" Value="16" />
             <Setter Property="Control.Margin" Value="8" />
             <Setter Property="Control.FontFamily" Value="Cambria" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ButtonBase}">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Button.IsDefaulted" Value="True">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" TargetName="border" Value="#FF7650B8"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="#FF3C7FB1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" TargetName="border" Value="#FF8B70B9"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="#FF2C628B"/>
+                            </Trigger>
+                            <Trigger Property="ToggleButton.IsChecked" Value="True">
+                                <Setter Property="Background" TargetName="border" Value="#FFBCDDEE"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="#FF245A83"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" TargetName="border" Value="#FFF4F4F4"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="#FFADB2B5"/>
+                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#FF838383"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="TextBox" >
             <Setter Property="Control.Background" Value="White" />
@@ -51,7 +84,17 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style TargetType="ListBox" >
+            <Setter Property="ItemsPanel" >
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -61,14 +104,20 @@
         <StackPanel>
             <TextBlock Text="Yandex Market" Style="{StaticResource HeaderStyle}" />
             <WrapPanel HorizontalAlignment="Center">
-                <TextBox Width="220" Text="{Binding Request}" x:Name="Text" ToolTip="Что хотите найти?" />
+                <TextBox Width="220" Text="{Binding Request, UpdateSourceTrigger=PropertyChanged}" x:Name="Text" ToolTip="Что хотите найти?" >
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding FindCommand}" />
+                    </TextBox.InputBindings>
+                </TextBox>
                 <TextBox Width="40" Text="{Binding Count}" ToolTip="Количество" />
-                <Button Content="Найти" Command="{Binding FindCommand}" Background="#FF6737B8" />
-                <Button Content="Экспорт" Command="{Binding ReportCommand}"/>
+                <WrapPanel>
+                    <Button Content="Найти" Command="{Binding FindCommand}" Background="#FF6737B8" />
+                    <Button Content="Экспорт" Command="{Binding ReportCommand}"/>
+                </WrapPanel>
             </WrapPanel>
         </StackPanel>
 
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Products}" AutoGenerateColumns="False" Width="630">
+        <!--<DataGrid Grid.Row="1" ItemsSource="{Binding Products}" AutoGenerateColumns="False" Width="630">
             <DataGrid.Resources>
                 <DataTemplate x:Key="DataTemplate">
                     <Image Source="{Binding UrlImage}" Stretch="Fill" Width="50" Height="50" />
@@ -91,7 +140,29 @@
                 <DataGridTextColumn Header="Цена" Binding="{Binding Price}" Width="0.3*"/>
                 <DataGridTemplateColumn Header="Картинка" CellTemplate="{StaticResource DataTemplate}" Width="*"/>
             </DataGrid.Columns>
-        </DataGrid>
+        </DataGrid>-->
+
+        <ListBox Grid.Row="1" ItemsSource="{Binding Products}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
+            <ListBox.Background>
+                <SolidColorBrush Color="#FFF0F0F0" Opacity="0.5"/>
+            </ListBox.Background>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Width="200" Margin="10">
+                        <Image Source="{Binding UrlImage}" Stretch="Uniform" Width="150" Height="150" />
+                        <TextBlock TextWrapping="Wrap" TextAlignment="Center" FontSize="14">
+                            <Hyperlink NavigateUri="{Binding Url}" RequestNavigate="Hyperlink_Click">
+                                <Run Text="{Binding Name}" />
+                            </Hyperlink>
+                        </TextBlock>
+                        <TextBlock  HorizontalAlignment="Center" >
+                            <Run Text="{Binding Price}" />
+                            <Run Text=" ₽" />
+                        </TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
     </Grid>
 </Window>

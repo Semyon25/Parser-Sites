@@ -11,7 +11,7 @@ namespace Parser
     class RequestParametres : INotifyPropertyChanged
     {
         private string request;
-        private int count;
+        private int count = 5;
 
         public string Request
         {

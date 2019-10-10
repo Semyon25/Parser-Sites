@@ -29,7 +29,7 @@ namespace Parser
             DataContext = new MainViewModel();
         }
 
-        private void DG_Hyperlink_Click(object sender, RoutedEventArgs e)
+        private void Hyperlink_Click(object sender, RoutedEventArgs e)
         {
             Hyperlink link = e.OriginalSource as Hyperlink;
             Process.Start(new ProcessStartInfo(link.NavigateUri.ToString()));

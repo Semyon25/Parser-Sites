@@ -41,6 +41,7 @@ namespace Parser
             ReportCommand = new RelayCommand(par => Report());
         }
 
+
         private void Report()
         {
             try
@@ -69,6 +70,8 @@ namespace Parser
 
         public RelayCommand FindCommand { get; }
         public RelayCommand ReportCommand { get; }
+
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName]string prop = "")

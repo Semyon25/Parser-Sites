@@ -21,15 +21,28 @@ namespace Parser
             if (request.Request == string.Empty || request.Count < 1)
                 throw new Exception("Неверный запрос!");
 
-            string searchText = request.Request;
-            searchText = searchText.Replace(" ", "+");
-            string html = GetHTML(prefix + searchText);
+            int attempt = 0;
+            ObservableCollection<Product> answer = null;
+            while (true)
+            {
+                string searchText = request.Request;
+                searchText = searchText.Replace(" ", "+");
+                string html = GetHTML(prefix + searchText);
 
-            if (html == string.Empty)
-                throw new Exception("Не удалось получить данные");
-
-            return DefineProducts(html, request.Count);
-
+                if (html == string.Empty)
+                    throw new Exception("Не удалось получить данные");
+                try
+                {
+                    answer = DefineProducts(html, request.Count);
+                    break;
+                }
+                catch (ArgumentException)
+                {
+                    attempt++;
+                    if (attempt == 2) throw new Exception("Не удалось получить данные веб-страницы по вашему запросу");
+                }
+            }
+            return answer;
         }
 
         private ObservableCollection<Product> DefineProducts(string html, int count)
@@ -41,7 +54,11 @@ namespace Parser
                 int indexBegin = html.IndexOf("id=\"product", index);
                 int indexEnd = html.IndexOf("id=\"product", ++indexBegin);
                 if (indexBegin == -1 || indexEnd == -1)
-                    throw new Exception("Доступное количество товаров: " + i.ToString());
+                {
+                    if (i==0) throw new ArgumentException();
+                    else throw new Exception("Доступное количество товаров: " + i.ToString());
+                }
+                    
 
                 index = indexEnd;
                 string productInfo = html.Substring(indexBegin, indexEnd - indexBegin);
